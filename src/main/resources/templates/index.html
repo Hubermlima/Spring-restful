@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="ISO-8859-1">
+<title>Insert title here</title>
+<script src="https://code.jquery.com/jquery-3.4.1.js"
+	integrity="sha256-WpOohJOqMqqyKL9FccASB9O0KwACQJpFTUBLTYOVvVU="
+	crossorigin="anonymous"></script>
+
+</head>
+<body>
+
+   <span id="msg"></span>
+
+	<script>
+	
+	var request = $.ajax({
+		url : "http://localhost:8080/curso_apirest/userSystem/returnUser/4",
+		method : "GET",
+		
+	});
+
+	request.done(function(data,status, info) {
+		$("#msg").text(data);
+	});
+
+	request.fail(function(jqXHR, textStatus) {
+		$("#msg").text(textStatus);
+	});
+	
+	
+	
+	</script>
+
+
+
+</body>
+</html>
