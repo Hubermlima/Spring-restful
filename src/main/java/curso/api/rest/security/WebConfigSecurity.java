@@ -5,7 +5,6 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpMethod;
 import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
-import org.springframework.security.config.annotation.web.builders.WebSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.configuration.WebSecurityConfigurerAdapter;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
@@ -25,37 +24,27 @@ public class WebConfigSecurity extends WebSecurityConfigurerAdapter{
 	@Override  // Configura as solicitações de acesso por HTTP
 	protected void configure(HttpSecurity http) throws Exception {
 		
-		// Ativando a protecao contra usuarios que não estao validados por token
-		http.csrf()
-		.csrfTokenRepository(CookieCsrfTokenRepository.withHttpOnlyFalse())
-		//Ativando permissao de acesso a pagina inicial do sistema
-		.disable().authorizeRequests().antMatchers("/").permitAll()
+		// Ativa proteção contra usuários não validados por token
+		http.csrf().csrfTokenRepository(CookieCsrfTokenRepository.withHttpOnlyFalse())
+		
+		// Ativa permissão para acesso a página inicial
+		.disable().authorizeRequests().antMatchers("/").permitAll()		
 		.antMatchers("/index").permitAll()
 		
+		// Liberação do CORS
 		.antMatchers(HttpMethod.OPTIONS, "/**").permitAll()
 		
-		// Redireciona apos usuario se deslogar do sistema
+		// URL de logout - Redireciona após deslogar do sistema
 		.anyRequest().authenticated().and().logout().logoutSuccessUrl("/index")
-		// Mapeia a URL de logout e invalida o usuario
+		
+		// Mapeia URL de logout e invalida o usuário
 		.logoutRequestMatcher(new AntPathRequestMatcher("/logout"))
-        // Filtra requisicoes de login para autenticacao
+		
+		// Filtra requisições de login para autenticação
 		.and().addFilterBefore(new JWTLoginFilter("/login", authenticationManager()), UsernamePasswordAuthenticationFilter.class)
-        // Filtra demais requisicoes para verificar a presenca do token jwt no header http
+		
+		// Filtra demais requisições para verificar a presença do TOKEN JWT no HEADER HTTP
 		.addFilterBefore(new JWTApiAuthenticationFilter(), UsernamePasswordAuthenticationFilter.class);
-		
-		
-		
-		
-		
-		
-		
-		
-		
-		
-		
-		
-		
-		
 		
 		
 	}
@@ -64,12 +53,7 @@ public class WebConfigSecurity extends WebSecurityConfigurerAdapter{
 	protected void configure(AuthenticationManagerBuilder auth) throws Exception {
 		
 		auth.userDetailsService(userDetailsServiceImpl).passwordEncoder(new BCryptPasswordEncoder());
-		
-		
+				
 	}
 
-	@Override // Ignora URL especificas
-	public void configure(WebSecurity web) throws Exception {
-         web.ignoring().antMatchers("/materialize/**");
-	}
 }

@@ -15,6 +15,7 @@ import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.JoinColumn;
 import javax.persistence.JoinTable;
+import javax.persistence.ManyToMany;
 import javax.persistence.OneToMany;
 import javax.persistence.UniqueConstraint;
 
@@ -34,15 +35,14 @@ public class UserSystem implements UserDetails{
 	
 	@Column(unique = true)
 	private String username;
+	
 	private String password;
 	
 	private String nameUser;
 	
-	@OneToMany(fetch = FetchType.EAGER)
-	@JoinTable(name = "users_role", uniqueConstraints = 
-	                                @UniqueConstraint(columnNames = {"user_id", "role_id"},
-	                                name = "unique_role_user"),
-	                                
+	@ManyToMany(fetch = FetchType.EAGER)
+	@JoinTable(name = "users_role", 
+	
 	                                joinColumns = @JoinColumn(name = "user_id", 
 	                                referencedColumnName = "id", 
 	                                table = "UserSystem", unique = false,
@@ -51,8 +51,9 @@ public class UserSystem implements UserDetails{
 	                                inverseJoinColumns = @JoinColumn(name = "role_id", 
                                     referencedColumnName = "id", 
                                     table = "Role", unique = false, updatable = false,
-                                    foreignKey = @ForeignKey(name = "user_fk", value = ConstraintMode.CONSTRAINT)))
-	private List<Role> roles;
+                                    foreignKey = @ForeignKey(name = "role_fk", value = ConstraintMode.CONSTRAINT)))
+	
+	private List<Role> roles = new ArrayList<>();
 	
 	@OneToMany(fetch = FetchType.LAZY, orphanRemoval = true, mappedBy = "userSystem", cascade = CascadeType.ALL)
 	private List<Telephone> telephones = new ArrayList<>();
@@ -114,6 +115,7 @@ public class UserSystem implements UserDetails{
 	}
 
 	@Override
+	@JsonIgnore
 	public Collection<? extends GrantedAuthority> getAuthorities() {
 		return roles;
 	}

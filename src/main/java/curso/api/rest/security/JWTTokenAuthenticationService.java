@@ -21,76 +21,87 @@ import io.jsonwebtoken.SignatureAlgorithm;
 @Component
 public class JWTTokenAuthenticationService {
 
-	// Tempo de validade do Token = 2 dias (em milisegundos)
+	// Tempo de validade do TOKEN - 2 dias
 	private static final long EXPIRATION_TIME = 172800000;
-	// Senha unica para compor a autenticacao e ajudar na seguranca
+	
+	// Senha única para compor a autenticação e ajudar na segurança
 	private static final String SECRET = "SenhaExtremamenteSecreta";
-	// Prefixo padrao de token
+	
+	// Prefixo padrão de Token
 	private static final String TOKEN_PREFIX = "Bearer";
+	
 	private static final String HEADER_STRING = "Authorization";
-
-	// Gerando token de autenticacao e adicionando ao cabeçalho e resposta HTTP
+	
+	// Gerando token de autenticação e adicionando ao cabeçalho e resposta Http
 	public void addAuthentication(HttpServletResponse response, String username) throws IOException {
-
-		// Montagem do Token
-		String JWT = Jwts.builder() // Chama o gerador de token
-				.setSubject(username) // Adiciona o usuario
-				.setExpiration(new Date(System.currentTimeMillis() + EXPIRATION_TIME)) // Tempo de expiração
-				.signWith(SignatureAlgorithm.HS512, SECRET).compact(); // Compactação e algoritmo de geracao de senha
-
-		// Junta token com o prefixo
-		String token = TOKEN_PREFIX + " " + JWT;
-
-		// Adiciona no cabeçalho http
-		response.addHeader(HEADER_STRING, token); // Authorization: Bearer 398593lmgla98t9eqo5l5k4l
-
-		corsLiberation(response);
 		
-		// Escreve token como responsta no corpo http
-		response.getWriter().write("{\"Authorizaton\": \"" + token + "\"}");
-
+		// Montagem do Token
+		String JWT = Jwts.builder() // gerador de token
+				.setSubject(username) // adiciona usuário
+				.setExpiration(new Date(System.currentTimeMillis() + EXPIRATION_TIME)) // tempo expiração
+				.signWith(SignatureAlgorithm.HS512, SECRET) // algoritmo de geração de senha
+				.compact(); // compactação String
+		
+		String token = TOKEN_PREFIX + " " + JWT; // Bearer 3498hih345jkh345ui53iu5hyi
+		
+		// adiciona token no cabeçalho http
+		response.addHeader(HEADER_STRING, token); // Authorization: Bearer 3498hih345jkh345ui53iu5hyi
+		
+		liberarCORS(response);
+		
+		// adiciona token como resposta no corpo do http
+		response.getWriter().write("{\"Authorization\": \"" + token + "\"}");
 	}
-
-	// Retorna o usuario validado com token ou caso não seja válido retorna null
+	
+	// Retorna o usuário validado com token ou caso não seja válido retorna null
 	public Authentication getAuthentication(HttpServletRequest request, HttpServletResponse response) {
-
-		// Pega o token enviado no cabecalho http
+		
+		// Pega o token enviado no cabeçalho Http
 		String token = request.getHeader(HEADER_STRING);
-
-		if (token != null) {
-			// Faz a validacao do token do usuario na requisicao
-			String user = Jwts.parser().setSigningKey(SECRET).parseClaimsJws(token.replace(TOKEN_PREFIX, "")).getBody()
-					.getSubject();
-
-			if (user != null) {
-
-				UserSystem userSystem = ApplicationContextLoad.getApplicationContext().getBean(IUserSystem.class)
-						.findUserByLogin(user);
-
-				if (userSystem != null) {
-					return new UsernamePasswordAuthenticationToken(userSystem.getUsername(), userSystem.getPassword(),
-							userSystem.getAuthorities());
+		
+		if (token != null) {			
+			// Faz validação do Token do usuário na requisição
+			String userName = Jwts.parser()
+					.setSigningKey(SECRET)
+					.parseClaimsJws(token.replace(TOKEN_PREFIX, ""))
+					.getBody()
+					.getSubject();	
+			
+			if (userName != null) {					
+				UserSystem user = ApplicationContextLoad
+						.getApplicationContext()
+						.getBean(IUserSystem.class)
+						.findUserByLogin(userName);
+				
+				if (user != null) {
+					return new UsernamePasswordAuthenticationToken(
+							user.getUsername(), 
+							user.getPassword(), 
+							user.getAuthorities());
 				}
 			}
-		}
-
-		// Liberando resposta para porta diferente do projeto Angular
-		corsLiberation(response);
-		return null; // Nao autorizado
+		}	
+		liberarCORS(response);
+		return null;
 	}
 
-	private void corsLiberation(HttpServletResponse response) {
+	// CORS policy
+	private void liberarCORS(HttpServletResponse response) {
 		if (response.getHeader("Access-Control-Allow-Origin") == null) {
-		     response.addHeader("Access-Control-Allow-Origin", "*");
+			response.addHeader("Access-Control-Allow-Origin", "*");		
 		}
 		
 		if (response.getHeader("Access-Control-Allow-Headers") == null) {
-		     response.addHeader("Access-Control-Allow-Headers", "*");
+			response.addHeader("Access-Control-Allow-Headers", "*");		
 		}
-		
+
 		if (response.getHeader("Access-Control-Request-Headers") == null) {
-		     response.addHeader("Access-Control-Request-Headers", "*");
+			response.addHeader("Access-Control-Request-Headers", "*");		
 		}
 		
+		if (response.getHeader("Access-Control-Allow-Methods") == null) {
+			response.addHeader("Access-Control-Allow-Methods", "*");		
+		}
 	}
+
 }

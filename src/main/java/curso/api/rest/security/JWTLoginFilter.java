@@ -1,7 +1,6 @@
 package curso.api.rest.security;
 
 import java.io.IOException;
-import java.util.Collections;
 
 import javax.servlet.FilterChain;
 import javax.servlet.ServletException;
@@ -19,41 +18,37 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 
 import curso.api.rest.model.UserSystem;
 
-// Estabelece o nosso gerenciador de Token
+
+// Estabelece gerenciador de token
 public class JWTLoginFilter extends AbstractAuthenticationProcessingFilter {
 
-	// Configurando o gerenciador de autenticacao
+	// Configurando o gerenciador de autenticação
 	protected JWTLoginFilter(String url, AuthenticationManager authenticationManager) {
 		
-        // Obriga a autenticar a URL  
+		// Obriga a autenticar a url
 		super(new AntPathRequestMatcher(url));
-          
-          // Gerenciador de autenticacao
-          setAuthenticationManager(authenticationManager);
+		
+		// Gerenciador de autenticação
+		setAuthenticationManager(authenticationManager);
 	}
 
-	// Retorna o usuario ao processar a autenticacao
+	// Retorna o usuário ao processar a autenticação
 	@Override
 	public Authentication attemptAuthentication(HttpServletRequest request, HttpServletResponse response)
 			throws AuthenticationException, IOException, ServletException {
-		
-	    //Está pegando o token para validar
-		UserSystem userSystem = new ObjectMapper().readValue(request.getInputStream(), UserSystem.class);
 
-		// Retorna o usuario login, senha e acesssos
+		UserSystem user = new ObjectMapper().readValue(request.getInputStream(), UserSystem.class);
 		return getAuthenticationManager()
-				.authenticate(new UsernamePasswordAuthenticationToken(
-						userSystem.getUsername(), 
-						userSystem.getPassword()));
+				              .authenticate(new UsernamePasswordAuthenticationToken(
+						      user.getUsername(), user.getPassword()));
+		
 	}
-	
 	
 	@Override
 	protected void successfulAuthentication(HttpServletRequest request, HttpServletResponse response, FilterChain chain,
 			Authentication authResult) throws IOException, ServletException {
-		
+	
 		new JWTTokenAuthenticationService().addAuthentication(response, authResult.getName());
 	}
-		
-	
+
 }

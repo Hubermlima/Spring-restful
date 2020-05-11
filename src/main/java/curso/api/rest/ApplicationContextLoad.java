@@ -4,23 +4,21 @@ import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
-import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Component;
 
 @Component
-public class ApplicationContextLoad implements ApplicationContextAware{
-
+public class ApplicationContextLoad implements ApplicationContextAware {
+	
 	@Autowired
 	private static ApplicationContext applicationContext;
-	
+
 	@Override
 	public void setApplicationContext(ApplicationContext applicationContext) throws BeansException {
-	     
 		this.applicationContext = applicationContext;
-		System.out.println("Senha (123): "+ new BCryptPasswordEncoder().encode("123"));
 	}
-
+	
 	public static ApplicationContext getApplicationContext() {
 		return applicationContext;
 	}
+
 }

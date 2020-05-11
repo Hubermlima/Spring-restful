@@ -6,13 +6,11 @@ import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 
 import curso.api.rest.model.UserSystem;
 import curso.api.rest.repository.IUserSystem;
 
 @Service
-@Transactional
 public class UserDetailsServiceImpl implements UserDetailsService{
 
 	@Autowired
@@ -27,13 +25,10 @@ public class UserDetailsServiceImpl implements UserDetailsService{
 			throw new UsernameNotFoundException("Username not found!");
 		}
 		
-		return new User(userSystem.getUsername(), 
-				userSystem.getPassword(), 
-				userSystem.isEnabled(),
-				userSystem.isAccountNonExpired(),
-				userSystem.isCredentialsNonExpired(),
-				userSystem.isAccountNonLocked(),
-				userSystem.getAuthorities());
+		return new User(userSystem.getUsername(), userSystem.getPassword(), userSystem.getAuthorities());
 	}
 
+	public void inserirAcessoPadrao(Long id) {
+		iUserSystem.inserirAcessoPadrao(id);
+	}
 }
