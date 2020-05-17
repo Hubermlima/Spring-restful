@@ -1,16 +1,13 @@
 package curso.api.rest.controller;
 
-import java.util.ArrayList;
-import java.util.List;
+import java.util.Optional;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.cache.annotation.CachePut;
-import org.springframework.cache.annotation.Cacheable;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
-import org.springframework.data.domain.Sort.Direction;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
@@ -45,7 +42,7 @@ public class IndexController {
 	private UserDetailsServiceImpl userDetailsServiceImpl;
 
 	@GetMapping(value = "/listUsers/page/{page}", produces = "application/json")
-	//@CachePut("listUsers") 
+	@CachePut("listUsers") 
 	public ResponseEntity<Page<UserSystem>> userListPaged(@PathVariable(value = "page") int page) {
 
 		PageRequest pageRequest = PageRequest.of(page, 5, Sort.by("nameUser"));
@@ -64,23 +61,27 @@ public class IndexController {
 		return new ResponseEntity<UserSystem>(userSystem, HttpStatus.OK);
 	}
 	
-	// ENDPOINT - Consulta de usuarios por fragmento de nomes
-	@GetMapping(value = "/returnUserbyName/{fragmentName}", produces = "application/json")
+	
+	/* 
+	 * ENDPOINT - Consulta de usuarios por fragmento de nomes ou consulta vazia
+	 * 
+	 */
+	@GetMapping(value = "/returnUserFilter", produces = "application/json")
 	@CachePut("listUsers") 
-	public ResponseEntity<Page<UserSystem>> returnUserbyName(@PathVariable(value = "fragmentName") String fragmentName) {
+	
+	public ResponseEntity<Page<UserSystem>> returnUserFilter(@RequestParam (name = "fragmentName") String name, 
+			                                                 @RequestParam (name = "page") Integer page ) {
 
-		Pageable pageRequest = PageRequest.of(0, 5, Sort.by("nameUser"));
+		Pageable pageRequest = PageRequest.of(page, 5, Sort.by("nameUser"));
 		Page<UserSystem> listUserByPage = null;
-		
-		if (fragmentName == null || 
-		   (fragmentName != null && fragmentName.trim().isEmpty()) || 
-		    fragmentName.equalsIgnoreCase("undefined")) {
+				
+		if (name == null || name.trim().isEmpty() || name.equalsIgnoreCase("undefined")) {
 			
 			listUserByPage = iUserSystem.findAll(pageRequest);
 			
 		} else {
 			
-			listUserByPage = iUserSystem.findByNameUserContainingIgnoreCase(fragmentName, pageRequest);
+			listUserByPage = iUserSystem.findByNameUserContainingIgnoreCase(name, pageRequest);
 			
 		}
 
